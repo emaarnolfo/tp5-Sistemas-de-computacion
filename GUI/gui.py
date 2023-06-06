@@ -8,16 +8,16 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Control de LED")
-        self.setGeometry(100, 100, 200, 100)
+        self.setGeometry(100, 100, 400, 200)
         
         # Botón para encender el LED
         self.btn_on = QPushButton("Encender LED", self)
-        self.btn_on.setGeometry(50, 20, 100, 30)
+        self.btn_on.setGeometry(100, 50, 200, 50)
         self.btn_on.clicked.connect(self.turn_on_led)
         
         # Botón para apagar el LED
         self.btn_off = QPushButton("Apagar LED", self)
-        self.btn_off.setGeometry(50, 60, 100, 30)
+        self.btn_off.setGeometry(100, 120, 200, 50)
         self.btn_off.clicked.connect(self.turn_off_led)
         
         self.show()
