@@ -1,10 +1,7 @@
-obj-m += driverGPIO.o
- 
-KDIR = -isystem /lib/modules/$(shell uname -r)/build/include
- 
- 
+obj-m +=  driverGPIO.o
+
 all:
-    make -C $(KDIR)  M=$(shell pwd) modules
- 
+	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
+
 clean:
-    make -C $(KDIR)  M=$(shell pwd) clean
+	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
