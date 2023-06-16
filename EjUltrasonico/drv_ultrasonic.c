@@ -25,8 +25,6 @@ static struct class *cl;
 static uint8_t echo_pin = 23;
 static uint8_t trig_pin = 24;
 
-static int measurement_in_progress = 0;     //Variable utilizada como semaforo
-
 
 static int my_open(struct inode *i, struct file *f)
 {
@@ -84,28 +82,22 @@ static ssize_t my_read(
     pr_info("Waiting for pin to go high");
     while (!gpio_get_value(echo_pin))
     {
-        udelay(1);
-        /*
         if (ktime_compare(ktime_get(), timeout) >= 0)
         {
             elapsed_us = ULONG_MAX;
             pr_err("Timeout reading the sensor, no object detected\n");
             goto timeout;
         }
-        */
     }
     start = ktime_get();
     while (gpio_get_value(echo_pin))
     {
-        /*
         if (ktime_compare(ktime_get(), timeout) >= 0)
         {
             elapsed_us = ULONG_MAX;
             pr_err("Timeout reading the sensor, no object detected\n");
             goto timeout;
         }
-        */
-        udelay(1);
     }
 
 
@@ -202,5 +194,5 @@ module_init(ultrasonic_init);
 module_exit(ultrasonic_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Cátedra Sistemas de Computación");
+MODULE_AUTHOR("SdComp: Windows98");
 MODULE_DESCRIPTION("Controlador del sensor ultrasónico");

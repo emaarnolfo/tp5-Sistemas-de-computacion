@@ -1,4 +1,4 @@
-obj-m += drv_ultrasonic.o 
+obj-m +=  drv_joystick.o
 
 all:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules

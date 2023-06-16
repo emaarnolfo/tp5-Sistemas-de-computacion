@@ -2,8 +2,14 @@ import matplotlib.pyplot as plt
 import time 
 import os
 
-x_values = [100, 200, 300, 400, 500, 600, 700, 800, 900]
-y_values = [0, 0, 0, 0, 0, 0, 0, 0, 0]
+x_values = []
+y_values = []
+valor = 0
+
+while valor <= 1000:
+	y_values.append(0)
+	x_values.append(valor)
+	valor += 20
 
 
 def update_graph(indice):
@@ -13,15 +19,16 @@ def update_graph(indice):
 	trip = int.from_bytes(data, 'little')
 	secs = trip * 1e-6 / 2
 	dist = 340 * secs
-	y_values[indice%9] = dist * 100
-	print(f'Total roundtrip took {trip} us, this gives us a distance of {dist * 100:.2f} cm')
+	y_values[indice%len(x_values)] = dist * 100
+	#print(f'Total roundtrip took {trip} us, this gives us a distance of {dist * 100:.2f} cm')
 	
 	plt.clf()	#Limpiar el gráfico anterior
 	plt.plot(x_values, y_values)
 	plt.xlabel('Eje X')
 	plt.ylabel('Eje Y')
 	plt.title('Grafico de Datos')
-	plt.pause(0.1)		# Pausa para lograr la actualizacion del grafico
+	plt.ylim(0,60)
+	plt.pause(0.001)		# Pausa para lograr la actualizacion del grafico
 	
 # Configurar el modo interactivo de Matplolib
 plt.ion()
