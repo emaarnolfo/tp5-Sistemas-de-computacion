@@ -1,1 +1,0 @@
-cmd_/home/emanuel/Escritorio/Facultad/SistComp/tp5/device-drivers/EjUltrasonico/driver.mod := { echo  /home/emanuel/Escritorio/Facultad/SistComp/tp5/device-drivers/EjUltrasonico/driver.o;  echo; } > /home/emanuel/Escritorio/Facultad/SistComp/tp5/device-drivers/EjUltrasonico/driver.mod

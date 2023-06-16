@@ -11,14 +11,22 @@
 #include <linux/delay.h>
 
 #define DEVICE_NAME "ultrasonic"
-#define TRIGGER_PIN (24)        //GPIO 24
-#define ECHO_PIN (23)           //GPIO 23
+#define TRIGGER_PIN 24        //GPIO 24
+#define ECHO_PIN 23           //GPIO 23
+
+#define MAX_BUFFER_LENGTH 7
+#define TRIGGER_HIGH_TIME_uS 10
+#define SPEED_OF_SOUND_M_S 343
 
 static dev_t first;
 static struct cdev c_dev;
 static struct class *cl;
 
-static int measurement_in_progress = 0;
+static uint8_t echo_pin = 23;
+static uint8_t trig_pin = 24;
+
+static int measurement_in_progress = 0;     //Variable utilizada como semaforo
+
 
 static int my_open(struct inode *i, struct file *f)
 {
@@ -32,54 +40,90 @@ static int my_close(struct inode *i, struct file *f)
     return 0;
 }
 
-static ssize_t my_read(struct file *f, char __user *buf, size_t len, loff_t *off)
+// The read function is used to read the distance from the sensor
+
+static ssize_t my_read(
+    struct file *f, char __user *buf, size_t len, loff_t *off)
 {
-    int distance;
-    ssize_t bytes_read;
-    unsigned long pulse_duration;
+    long timeout_us;
+    unsigned long elapsed_us;
 
-    printk(KERN_INFO "ultrasonic: read()\n");
+    ktime_t timeout, start, finish;
+    
+    printk(KERN_INFO "ultrasonic: read()");
 
-    if (measurement_in_progress)
-    {
-        return -EBUSY; // Si una medición ya está en progreso, retornar un error
+    if (*off) {
+        return 0;
     }
 
-    // Disparar el pulso ultrasónico
-    gpio_set_value_cansleep(TRIGGER_PIN, 1);
-    udelay(10);
-    gpio_set_value_cansleep(TRIGGER_PIN, 0);
+    pr_info("Attempting to read sensor\n");
 
-    // Esperar por el eco
-    //measurement_in_progress = 1;
-    while (gpio_get_value(ECHO_PIN) == 0)
+    if (echo_pin >= 100 || trig_pin >= 100)
+    {
+        pr_err("GPIO pins have not been defined yet\n");
+        return 0;
+    }
+
+    // Send trugger pulse
+    gpio_set_value(trig_pin, 1);
+    udelay(TRIGGER_HIGH_TIME_uS);
+    gpio_set_value(trig_pin, 0);
+
+    // Pulse round trip is a maximum of 8 meters
+    // 8 pulses are required
+    // Add a 200% margin for error just in case and because it doesn't
+    // work without it.
+
+    // This waiting is blocking but seems like the most accurate way
+
+    timeout_us = 1e9;
+
+    timeout = ktime_add_us(ktime_get(), timeout_us);
+
+    // Look at timers maybe
+    pr_info("Waiting for pin to go high");
+    while (!gpio_get_value(echo_pin))
     {
         udelay(1);
+        /*
+        if (ktime_compare(ktime_get(), timeout) >= 0)
+        {
+            elapsed_us = ULONG_MAX;
+            pr_err("Timeout reading the sensor, no object detected\n");
+            goto timeout;
+        }
+        */
     }
-    udelay(2);
-
-    unsigned long start_time = jiffies;
-    while (gpio_get_value(ECHO_PIN) == 1)
+    start = ktime_get();
+    while (gpio_get_value(echo_pin))
     {
+        /*
+        if (ktime_compare(ktime_get(), timeout) >= 0)
+        {
+            elapsed_us = ULONG_MAX;
+            pr_err("Timeout reading the sensor, no object detected\n");
+            goto timeout;
+        }
+        */
         udelay(1);
     }
-    //measurement_in_progress = 0;
-    unsigned long end_time = jiffies;
 
-    pulse_duration = (end_time - start_time) * (1000000 / HZ);
 
-    // Calcular la distancia en función de la velocidad del sonido y la duración del pulso
-    // (ajusta el factor de conversión según tus necesidades)
-    distance = pulse_duration * 17 / 1000;
+    finish = ktime_get();
+    elapsed_us = (unsigned long)ktime_us_delta(finish, start);
 
-    // Convertir la distancia a una cadena de caracteres
-    char distance_str[16];
-    snprintf(distance_str, sizeof(distance_str), "%d\n", distance);
+    pr_info("Read the sensor, got a total round trip time of %lu us\n", elapsed_us);
 
-    // Copiar la cadena de caracteres al espacio de usuario
-    bytes_read = simple_read_from_buffer(buf, len, off, distance_str, strlen(distance_str));
+timeout:
+    len = sizeof(unsigned long);
 
-    return bytes_read;
+    if (copy_to_user(buf, &elapsed_us, len))
+    {
+        pr_err("Error copying elapsed time to user\n");
+    }
+
+    *off += len;
+    return len;
 }
 
 static struct file_operations ultrasonic_fops =
