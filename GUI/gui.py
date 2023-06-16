@@ -15,45 +15,43 @@ y_values_joy = []
 
 valor = 0
 
-while valor <= 10000:
-    y_values_dist.append(valor)
-    #y_values_dist.append(0)
+while valor <= 1000:
+    #y_values_dist.append(valor)
+    y_values_dist.append(0)
     x_values_dist.append(valor)
-    y_values_joy.append(valor)
-    #y_values_joy.append(0)
+    #y_values_joy.append(valor)
+    y_values_joy.append(0)
     x_values_joy.append(valor)
     valor += 20
 
 def update_graph_dist():
     indice = 0
-    while (1):
-    #    with open('/dev/ultrasonic', 'rb') as file:
-    #		data = file.read()
-        
-    #	trip = int.from_bytes(data, 'little')
-    #	secs = trip * 1e-6 / 2
-    #	dist = 340 * secs
-    #	y_values[indice%len(x_values)] = dist * 100
-        #print(f'Total roundtrip took {trip} us, this gives us a distance of {dist * 100:.2f} cm')
-        
-        plt.clf()	#Limpiar el gráfico anterior
-        plt.plot(x_values_dist, y_values_dist)
-        plt.xlabel('Eje X')
-        plt.ylabel('Eje Y')
-        plt.title('Grafico de Datos')
-        plt.ylim(0,60)
-        plt.pause(0.001)		# Pausa para lograr la actualizacion del grafico
-        indice += 1
+    while True:
+        with open('/dev/ultrasonic', 'rb') as file:
+            data = file.read()
+            
+            trip = int.from_bytes(data, 'little')
+            secs = trip * 1e-6 / 2
+            dist = 340 * secs
+            y_values_dist[indice%len(x_values_dist)] = dist * 100
+            #print(f'Total roundtrip took {trip} us, this gives us a distance of {dist * 100:.2f} cm')
+                
+            plt.clf()	#Limpiar el gráfico anterior 
+            plt.plot(x_values_dist, y_values_dist)
+            plt.xlabel('Eje X')
+            plt.ylabel('Eje Y')
+            plt.title('Sensor Ultrasónico')
+            plt.ylim(0,60)
+            plt.pause(0.001)		# Pausa para lograr la actualizacion del grafico
+            indice += 1
 
-        if not plt.fignum_exists(plt.figure):  # Verificar si la figura ha sido cerrada
-            break
         
 def update_graph_joy():
     indice = 0
     while (1):
-    #	with open('/dev/joystick', 'rb') as file:
-    #		data = file.read()
-            #y_values[indice%len(x_values)] = int.from_bytes(data, byteorder='little', signed=False)
+        with open('/dev/joystick', 'rb') as file:
+            data = file.read()
+            y_values_joy[indice%len(x_values_joy)] = int.from_bytes(data, byteorder='little', signed=False)
 
             #print(f'value_joy: {value_joy}') 
             
@@ -61,13 +59,10 @@ def update_graph_joy():
             plt.plot(x_values_joy, y_values_joy)
             plt.xlabel('Eje X')
             plt.ylabel('Eje Y')
-            plt.title('Grafico de Datos')
+            plt.title('Joystick analógico')
             plt.ylim(0,650)
             plt.pause(0.001)		# Pausa para lograr la actualizacion del grafico
             indice += 1
-
-            if not plt.fignum_exists(plt.figure):  # Verificar si la figura ha sido cerrada
-                 break
 
 # Crear ventana de la interfaz
 window = tk.Tk()
