@@ -7,19 +7,20 @@ y_values = []
 valor = 0
 
 while valor <= 1000:
-	y_values.append(0)
+	#y_values.append(0)
+	y_values.append(valor)
 	x_values.append(valor)
 	valor += 20
 
 
 def update_graph(indice):
-	with open('/dev/ultrasonic', 'rb') as file:
-		data = file.read()
+#	with open('/dev/ultrasonic', 'rb') as file:
+#		data = file.read()
 	
-	trip = int.from_bytes(data, 'little')
-	secs = trip * 1e-6 / 2
-	dist = 340 * secs
-	y_values[indice%len(x_values)] = dist * 100
+#	trip = int.from_bytes(data, 'little')
+#	secs = trip * 1e-6 / 2
+#	dist = 340 * secs
+#	y_values[indice%len(x_values)] = dist * 100
 	#print(f'Total roundtrip took {trip} us, this gives us a distance of {dist * 100:.2f} cm')
 	
 	plt.clf()	#Limpiar el gráfico anterior
@@ -40,6 +41,8 @@ i = 0
 while (1):
 	update_graph(i)
 	i += 1
+	if not plt.fignum_exists(plt.figure):
+		break
 	
 plt.ioff()
 plt.show()
