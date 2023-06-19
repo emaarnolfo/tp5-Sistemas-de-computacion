@@ -62,23 +62,15 @@ static ssize_t my_read(
         return 0;
     }
 
-    // Send trugger pulse
     gpio_set_value(trig_pin, 1);
     udelay(TRIGGER_HIGH_TIME_uS);
     gpio_set_value(trig_pin, 0);
 
-    // Pulse round trip is a maximum of 8 meters
-    // 8 pulses are required
-    // Add a 200% margin for error just in case and because it doesn't
-    // work without it.
-
-    // This waiting is blocking but seems like the most accurate way
 
     timeout_us = 1e9;
 
     timeout = ktime_add_us(ktime_get(), timeout_us);
 
-    // Look at timers maybe
     pr_info("Waiting for pin to go high");
     while (!gpio_get_value(echo_pin))
     {
